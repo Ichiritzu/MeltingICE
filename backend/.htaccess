@@ -1,0 +1,21 @@
+# MeltingICE.app - Apache Configuration
+# Simpler version - Cloudways handles HTTPS already
+
+RewriteEngine On
+
+# Redirect www to non-www ONLY (skip HTTPS - Cloudways handles it)
+RewriteCond %{HTTP_HOST} ^www\.meltingice\.app$ [NC]
+RewriteRule ^(.*)$ https://meltingice.app/$1 [R=301,L]
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Deny access to hidden files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

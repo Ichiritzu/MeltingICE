@@ -1,26 +1,156 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Thaw Palette - Melting ICE */
+  --background: #1a1d2e;
+  --surface: #242838;
+  --surface-light: #2d3348;
+  --foreground: #f5f0eb;
+  --foreground-muted: #9ca3af;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Warm accent colors */
+  --primary: #ff7b5f;
+  --primary-hover: #ff9580;
+  --secondary: #5ecfcf;
+  --accent: #ffb347;
+  --success: #5dd39e;
+  --danger: #e85d75;
+  --warning: #fbbf24;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Gradients */
+  --gradient-warm: linear-gradient(135deg, #ff7b5f 0%, #ffb347 100%);
+  --gradient-cool: linear-gradient(135deg, #5ecfcf 0%, #6366f1 100%);
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Dark Leaflet popup styling with warm theme */
+.leaflet-container {
+  z-index: 0;
+}
+
+.leaflet-pane,
+.leaflet-control,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 0;
+}
+
+.leaflet-control {
+  z-index: 1;
+}
+
+.leaflet-popup-content-wrapper {
+  background: var(--surface) !important;
+  color: var(--foreground) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--surface) !important;
+}
+
+.leaflet-popup-content {
+  margin: 12px 16px !important;
+}
+
+/* Custom scrollbar with warm accent */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 123, 95, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 123, 95, 0.5);
+}
+
+/* Animation */
+@keyframes pulse-soft {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Warm glow effects */
+@keyframes glow-warm {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(255, 123, 95, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(255, 123, 95, 0.5);
+  }
+}
+
+.glow-warm {
+  animation: glow-warm 3s ease-in-out infinite;
+}
+
+/* Button styles */
+.btn-primary {
+  background: var(--gradient-warm);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(255, 123, 95, 0.4);
+}
+
+/* Card styling */
+.card {
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+}
+
+.card:hover {
+  border-color: rgba(255, 123, 95, 0.2);
+}
+
+/* Slide-up animation for mobile menu */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 }

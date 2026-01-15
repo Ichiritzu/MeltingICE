@@ -1,0 +1,12 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://meltingice.app/sitemap.xml
+
+# Disallow admin/API paths
+Disallow: /api/
+Disallow: /admin/
+Disallow: /phpmyadmin/
+Disallow: /phpMyAdmin/
