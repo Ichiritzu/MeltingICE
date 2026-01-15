@@ -4,7 +4,7 @@
 
 Please do not open public issues for security reports.
 
-Email: security@meltingice.app
+Email: support@meltingice.app
 
 Include:
 - A clear description of the issue
