@@ -127,16 +127,17 @@ export default function AdminPage() {
 
     async function loadCommunityItems() {
         try {
-            // Community list endpoint uses X-Admin-Key header (server-side only in production)
-            // For now, we'll try Bearer token and gracefully handle errors
             const response = await fetch(`${API_BASE}/admin/community/list.php?status=pending`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'X-Admin-Key': token || '', // Try both auth methods
                 },
             });
 
-            // Don't logout on 401 from community endpoint - it may just not be configured
+            if (response.status === 401) {
+                logout();
+                return;
+            }
+
             if (!response.ok) {
                 console.warn('Community items not available:', response.status);
                 setCommunityItems([]);

@@ -2,33 +2,27 @@
 /**
  * GET /api/admin/community/list.php
  * List all community items (events and donations) for admin review
- * Requires admin secret key (X-Admin-Key header)
+ * Requires admin JWT authentication (same as other admin endpoints)
  */
 
-require_once __DIR__ . '/../../init.php';
+require_once __DIR__ . '/../auth.php';
 
+// CORS headers
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-Admin-Key');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// Check admin key
-$adminKey = $_SERVER['HTTP_X_ADMIN_KEY'] ?? '';
-if ($adminKey !== getenv('ADMIN_SECRET')) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
-    exit;
-}
+// Verify admin JWT token
+$admin = requireAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
-    exit;
+    sendError('Method not allowed', 405);
 }
 
 $type = $_GET['type'] ?? 'all'; // 'events', 'donations', or 'all'
