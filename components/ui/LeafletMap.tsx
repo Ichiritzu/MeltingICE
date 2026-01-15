@@ -165,58 +165,16 @@ export default function LeafletMap({
 
                 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-                // MapLibre GL Vector Tiles - allows customizable text size
-                const maplibregl = await import('maplibre-gl');
-                const { default: maplibreGLLeaflet } = await import('@maplibre/maplibre-gl-leaflet');
-
-                // Import MapLibre CSS
-                if (!document.getElementById('maplibre-css')) {
-                    const link = document.createElement('link');
-                    link.id = 'maplibre-css';
-                    link.rel = 'stylesheet';
-                    link.href = 'https://unpkg.com/maplibre-gl@4.0.0/dist/maplibre-gl.css';
-                    document.head.appendChild(link);
-                }
-
-                // Use Stadia Maps Alidade Smooth (free, vibrant colors with open vector tiles)
-                try {
-                    // Use OSM Bright style - colorful with all icons included
-                    const styleUrl = 'https://tiles.stadiamaps.com/styles/osm_bright.json';
-
-                    // Add the MapLibre GL layer to Leaflet
-                    const glLayer = (L as any).maplibreGL({
-                        style: styleUrl,
-                        attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a>, &copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
-                    });
-                    glLayer.addTo(map);
-
-                    // After style loads, increase text sizes
-                    const glMap = glLayer.getMaplibreMap();
-                    glMap.on('style.load', () => {
-                        const style = glMap.getStyle();
-                        if (style && style.layers) {
-                            style.layers.forEach((layer: any) => {
-                                if (layer.type === 'symbol' && layer.layout) {
-                                    try {
-                                        const currentSize = glMap.getLayoutProperty(layer.id, 'text-size');
-                                        if (typeof currentSize === 'number') {
-                                            glMap.setLayoutProperty(layer.id, 'text-size', Math.round(currentSize * 1.4));
-                                        }
-                                    } catch (e) {
-                                        // Some layers may not support this, ignore
-                                    }
-                                }
-                            });
-                        }
-                    });
-                } catch (error) {
-                    console.warn('Vector tiles failed to load, falling back to raster tiles:', error);
-                    // Fallback to OSM raster tiles
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                        maxZoom: 19,
-                    }).addTo(map);
-                }
+                // Use OSM raster tiles - reliable across all environments
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 19,
+                    updateWhenIdle: true,
+                    updateWhenZooming: false,
+                    keepBuffer: 2,
+                    crossOrigin: true,
+                    detectRetina: true,
+                }).addTo(map);
 
                 // Disable drag/scroll on mobile initially
                 if (L.Browser.mobile) {
