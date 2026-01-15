@@ -1,6 +1,13 @@
-# MeltingICE.app
+<p align="center">
+  <img src="public/meltingice_logo.png" alt="MeltingICE" width="400">
+</p>
 
-A community safety platform designed to help communities document, report, and stay informed. Built with privacy-first principles and local-first data storage.
+<h1 align="center">MeltingICE</h1>
+
+<p align="center">
+  A community safety platform designed to help communities document, report, and stay informed.<br>
+  Built with privacy-first principles and local-first data storage.
+</p>
 
 ![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
