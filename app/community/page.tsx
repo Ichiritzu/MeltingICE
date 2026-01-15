@@ -35,6 +35,8 @@ export default function CommunityPage() {
         organizer: '',
         link: '',
         category: 'general',
+        isAllDay: false,
+        isNationwide: false,
     });
     const [submitting, setSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -84,7 +86,7 @@ export default function CommunityPage() {
 
             if (result.success) {
                 setSubmitStatus('success');
-                setFormData({ email: '', title: '', name: '', description: '', date: '', time: '', location: '', organizer: '', link: '', category: 'general' });
+                setFormData({ email: '', title: '', name: '', description: '', date: '', time: '', location: '', organizer: '', link: '', category: 'general', isAllDay: false, isNationwide: false });
                 setTimeout(() => {
                     setShowSubmitModal(false);
                     setSubmitStatus('idle');
@@ -311,37 +313,63 @@ export default function CommunityPage() {
                                                 className="w-full bg-zinc-900 border border-zinc-600 rounded-lg px-3 py-2 text-sm focus:border-purple-500 focus:outline-none resize-none"
                                             />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div>
-                                                <label className="block text-sm text-zinc-400 mb-1">Date *</label>
-                                                <input
-                                                    type="date"
-                                                    required
-                                                    value={formData.date}
-                                                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                                    className="w-full bg-zinc-900 border border-zinc-600 rounded-lg px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
-                                                />
+
+                                        {/* Date and Time with All Day option */}
+                                        <div className="space-y-3">
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label className="block text-sm text-zinc-400 mb-1">Date *</label>
+                                                    <input
+                                                        type="date"
+                                                        required
+                                                        value={formData.date}
+                                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                                        className="w-full bg-zinc-900 border border-zinc-600 rounded-lg px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm text-zinc-400 mb-1">Time</label>
+                                                    <input
+                                                        type="time"
+                                                        disabled={formData.isAllDay}
+                                                        value={formData.time}
+                                                        onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                                                        className={`w-full bg-zinc-900 border border-zinc-600 rounded-lg px-3 py-2 text-sm focus:border-purple-500 focus:outline-none ${formData.isAllDay ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label className="block text-sm text-zinc-400 mb-1">Time</label>
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.isAllDay}
+                                                    onChange={(e) => setFormData({ ...formData, isAllDay: e.target.checked, time: e.target.checked ? '' : formData.time })}
+                                                    className="w-4 h-4 rounded border-zinc-600 bg-zinc-900 text-purple-500 focus:ring-purple-500"
+                                                />
+                                                <span className="text-sm text-zinc-300">All Day Event</span>
+                                            </label>
+                                        </div>
+
+                                        {/* Location with Nationwide option */}
+                                        <div className="space-y-2">
+                                            <label className="block text-sm text-zinc-400 mb-1">Location *</label>
+                                            <div className="flex gap-2">
                                                 <input
                                                     type="text"
-                                                    placeholder="e.g., 2:00 PM"
-                                                    value={formData.time}
-                                                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                                    className="w-full bg-zinc-900 border border-zinc-600 rounded-lg px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
+                                                    required
+                                                    disabled={formData.isNationwide}
+                                                    value={formData.isNationwide ? 'Nationwide' : formData.location}
+                                                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                                    placeholder="City, State or venue"
+                                                    className={`flex-1 bg-zinc-900 border border-zinc-600 rounded-lg px-3 py-2 text-sm focus:border-purple-500 focus:outline-none ${formData.isNationwide ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, isNationwide: !formData.isNationwide, location: formData.isNationwide ? '' : 'Nationwide' })}
+                                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${formData.isNationwide ? 'bg-purple-600 text-white' : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'}`}
+                                                >
+                                                    🇺🇸 Nationwide
+                                                </button>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-zinc-400 mb-1">Location *</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                value={formData.location}
-                                                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                                className="w-full bg-zinc-900 border border-zinc-600 rounded-lg px-3 py-2 text-sm focus:border-purple-500 focus:outline-none"
-                                            />
                                         </div>
                                         <div>
                                             <label className="block text-sm text-zinc-400 mb-1">Organizer</label>

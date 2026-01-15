@@ -127,18 +127,35 @@ export default function AdminPage() {
 
     async function loadCommunityItems() {
         try {
+            // Community list endpoint uses X-Admin-Key header (server-side only in production)
+            // For now, we'll try Bearer token and gracefully handle errors
             const response = await fetch(`${API_BASE}/admin/community/list.php?status=pending`, {
-                headers: { 'Authorization': `Bearer ${token}` },
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'X-Admin-Key': token || '', // Try both auth methods
+                },
             });
+
+            // Don't logout on 401 from community endpoint - it may just not be configured
+            if (!response.ok) {
+                console.warn('Community items not available:', response.status);
+                setCommunityItems([]);
+                return;
+            }
+
             const data = await response.json();
 
             if (data.success) {
-                setCommunityItems(data.data || []);
-            } else if (response.status === 401) {
-                logout();
+                // Combine events and donations into a single list
+                const items = [
+                    ...(data.events || []).map((e: any) => ({ ...e, type: 'event' })),
+                    ...(data.donations || []).map((d: any) => ({ ...d, type: 'donation' })),
+                ];
+                setCommunityItems(items);
             }
         } catch (err) {
             console.error('Failed to load community items:', err);
+            setCommunityItems([]);
         }
     }
 
