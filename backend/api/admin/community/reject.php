@@ -2,28 +2,23 @@
 /**
  * POST /api/admin/community/reject.php
  * Reject a pending community item
- * Requires admin secret key
+ * Supports both X-Admin-Key header and Bearer token authentication
  */
 
-require_once __DIR__ . '/../../init.php';
+require_once __DIR__ . '/auth_helper.php';
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-Admin-Key');
+header('Access-Control-Allow-Headers: Content-Type, X-Admin-Key, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// Check admin key
-$adminKey = $_SERVER['HTTP_X_ADMIN_KEY'] ?? '';
-if ($adminKey !== getenv('ADMIN_SECRET')) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
-    exit;
-}
+// Verify admin access
+requireCommunityAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);

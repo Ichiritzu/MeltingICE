@@ -48,14 +48,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // ============================================
-// 3. DATABASE CONNECTION
+// 3. LOAD ENVIRONMENT VARIABLES FROM .env
 // ============================================
-// IMPORTANT: Set these environment variables on your server
-// DB_HOST, DB_NAME, DB_USER, DB_PASS must be configured
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_NAME', getenv('DB_NAME') ?: '');
-define('DB_USER', getenv('DB_USER') ?: '');
-define('DB_PASS', getenv('DB_PASS') ?: '');
+$envFile = __DIR__ . '/.env';
+$_ENV_CUSTOM = [];
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if (empty($line) || $line[0] === '#') continue;
+        $pos = strpos($line, '=');
+        if ($pos !== false) {
+            $key = trim(substr($line, 0, $pos));
+            $value = trim(substr($line, $pos + 1));
+            // Remove surrounding quotes if present
+            if ((substr($value, 0, 1) === '"' && substr($value, -1) === '"') ||
+                (substr($value, 0, 1) === "'" && substr($value, -1) === "'")) {
+                $value = substr($value, 1, -1);
+            }
+            $_ENV_CUSTOM[$key] = $value;
+        }
+    }
+}
+
+// Helper function to get env value (checks custom loaded values, then system env)
+function env(string $key, $default = '') {
+    global $_ENV_CUSTOM;
+    return $_ENV_CUSTOM[$key] ?? getenv($key) ?: $default;
+}
+
+// ============================================
+// 4. DATABASE CONNECTION
+// ============================================
+define('DB_HOST', env('DB_HOST', 'localhost'));
+define('DB_NAME', env('DB_NAME', ''));
+define('DB_USER', env('DB_USER', ''));
+define('DB_PASS', env('DB_PASS', ''));
 
 function getDB(): PDO {
     static $pdo = null;

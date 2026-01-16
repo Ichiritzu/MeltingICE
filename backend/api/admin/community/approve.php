@@ -2,10 +2,10 @@
 /**
  * POST /api/admin/community/approve.php
  * Approve a pending community item and send email notification
- * Requires admin secret key
+ * Supports both X-Admin-Key header and Bearer token authentication
  */
 
-require_once __DIR__ . '/../../init.php';
+require_once __DIR__ . '/auth_helper.php';
 require_once __DIR__ . '/../../../vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -14,20 +14,15 @@ use PHPMailer\PHPMailer\Exception;
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-Admin-Key');
+header('Access-Control-Allow-Headers: Content-Type, X-Admin-Key, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// Check admin key
-$adminKey = $_SERVER['HTTP_X_ADMIN_KEY'] ?? '';
-if ($adminKey !== getenv('ADMIN_SECRET')) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
-    exit;
-}
+// Verify admin access
+requireCommunityAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -139,7 +134,7 @@ function sendApprovalEmail($toEmail, $itemName, $type) {
         $mail->Host       = 'smtp.protonmail.ch';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'support@meltingice.app';
-        $mail->Password   = getenv('SMTP_PASSWORD'); // Set SMTP_PASSWORD env var
+        $mail->Password   = env('SMTP_PASSWORD', ''); // Set SMTP_PASSWORD in .env
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 

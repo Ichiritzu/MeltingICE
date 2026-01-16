@@ -32,7 +32,7 @@ try {
             location, organizer, link, created_at
         FROM community_events 
         WHERE status = 'approved' 
-        AND event_date >= CURDATE()
+        AND event_date >= DATE_SUB(CURDATE(), INTERVAL 2 DAY)
         ORDER BY event_date ASC
     ");
     $stmt->execute();

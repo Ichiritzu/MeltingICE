@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { api, CommunityEvent, CommunityDonation } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Megaphone, Heart, MapPin, X, ExternalLink, Calendar, Scale, HandHeart, Shield, Loader2, Users } from 'lucide-react';
+import { Megaphone, Heart, MapPin, X, ExternalLink, Calendar, Scale, HandHeart, Shield, Loader2, Users, Clock } from 'lucide-react';
 
 // Category config for donation display
 const categoryConfig: Record<string, { label: string; color: string }> = {
@@ -40,6 +40,7 @@ export default function CommunityPage() {
     });
     const [submitting, setSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [selectedItem, setSelectedItem] = useState<(CommunityEvent & { itemType: 'event' }) | (CommunityDonation & { itemType: 'donation' }) | null>(null);
 
     // Fetch data on mount
     useEffect(() => {
@@ -163,7 +164,11 @@ export default function CommunityPage() {
                             ) : (
                                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {events.map((event) => (
-                                        <div key={event.id} className="bg-[#242838] border border-white/5 rounded-2xl p-5 hover:border-orange-400/30 transition-all">
+                                        <div
+                                            key={event.id}
+                                            onClick={() => setSelectedItem({ ...event, itemType: 'event' })}
+                                            className="bg-[#242838] border border-white/5 rounded-2xl p-5 hover:border-orange-400/30 transition-all block cursor-pointer"
+                                        >
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className="bg-orange-500/20 text-orange-300 px-2.5 py-1 rounded-lg text-xs font-bold">
                                                     {formatDate(event.event_date)}
@@ -179,12 +184,9 @@ export default function CommunityPage() {
                                             {event.organizer && (
                                                 <p className="text-xs text-zinc-500 mb-3">By: {event.organizer}</p>
                                             )}
-                                            {event.link && (
-                                                <a href={event.link} target="_blank" rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-1 text-sm text-orange-400 hover:underline">
-                                                    Event Details <ExternalLink className="w-3 h-3" />
-                                                </a>
-                                            )}
+                                            <span className="inline-flex items-center gap-1 text-sm text-orange-400">
+                                                View Details →
+                                            </span>
                                         </div>
                                     ))}
                                 </div>
@@ -212,12 +214,10 @@ export default function CommunityPage() {
                             ) : (
                                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {donations.map((org) => (
-                                        <a
+                                        <div
                                             key={org.id}
-                                            href={org.link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="bg-[#242838] border border-white/5 rounded-2xl p-5 hover:border-pink-400/30 transition-all group"
+                                            onClick={() => setSelectedItem({ ...org, itemType: 'donation' })}
+                                            className="bg-[#242838] border border-white/5 rounded-2xl p-5 hover:border-pink-400/30 transition-all group cursor-pointer"
                                         >
                                             <div className="flex items-center gap-2 mb-3">
                                                 <span className={`${categoryConfig[org.category]?.color || 'bg-zinc-500'} p-1.5 rounded-lg text-white`}>
@@ -230,9 +230,9 @@ export default function CommunityPage() {
                                             <h3 className="font-bold text-lg mb-2 group-hover:text-pink-400 transition-colors">{org.name}</h3>
                                             <p className="text-sm text-[#9ca3af] line-clamp-3">{org.description}</p>
                                             <div className="mt-4 flex items-center gap-1 text-sm text-pink-400">
-                                                Donate <ExternalLink className="w-3 h-3" />
+                                                View Details →
                                             </div>
-                                        </a>
+                                        </div>
                                     ))}
                                 </div>
                             )}
@@ -465,6 +465,96 @@ export default function CommunityPage() {
                     </div>
                 )
             }
+
+            {/* Item Detail Modal */}
+            {selectedItem && (
+                <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4" onClick={() => setSelectedItem(null)}>
+                    <div className="bg-[#1a1d28] border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-5 border-b border-white/10">
+                            <div className="flex items-center gap-3">
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${selectedItem.itemType === 'event' ? 'bg-purple-500/20 text-purple-400' : 'bg-pink-500/20 text-pink-400'}`}>
+                                    {selectedItem.itemType === 'event' ? '📅 Event' : '💜 Resource'}
+                                </span>
+                            </div>
+                            <button onClick={() => setSelectedItem(null)} className="text-zinc-400 hover:text-white text-2xl leading-none">&times;</button>
+                        </div>
+                        <div className="p-6 space-y-5">
+                            <h2 className="text-2xl font-bold">{selectedItem.itemType === 'event' ? (selectedItem as CommunityEvent).title : (selectedItem as CommunityDonation).name}</h2>
+
+                            {/* Event Details */}
+                            {selectedItem.itemType === 'event' && (
+                                <div className="grid grid-cols-2 gap-3">
+                                    {(selectedItem as CommunityEvent).event_date && (
+                                        <div className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl">
+                                            <Calendar className="w-5 h-5 text-purple-400" />
+                                            <div>
+                                                <p className="text-xs text-zinc-500 uppercase">Date</p>
+                                                <p className="font-medium">{formatDate((selectedItem as CommunityEvent).event_date)}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl">
+                                        <Clock className="w-5 h-5 text-purple-400" />
+                                        <div>
+                                            <p className="text-xs text-zinc-500 uppercase">Time</p>
+                                            <p className="font-medium">{(selectedItem as CommunityEvent).event_time || 'All Day'}</p>
+                                        </div>
+                                    </div>
+                                    {(selectedItem as CommunityEvent).location && (
+                                        <div className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl">
+                                            <MapPin className="w-5 h-5 text-purple-400" />
+                                            <div>
+                                                <p className="text-xs text-zinc-500 uppercase">Location</p>
+                                                <p className="font-medium">{(selectedItem as CommunityEvent).location}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {(selectedItem as CommunityEvent).organizer && (
+                                        <div className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl">
+                                            <Users className="w-5 h-5 text-purple-400" />
+                                            <div>
+                                                <p className="text-xs text-zinc-500 uppercase">Organizer</p>
+                                                <p className="font-medium">{(selectedItem as CommunityEvent).organizer}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Donation Category */}
+                            {selectedItem.itemType === 'donation' && (
+                                <div className="flex items-center gap-2">
+                                    <span className={`${categoryConfig[(selectedItem as CommunityDonation).category]?.color || 'bg-zinc-500'} p-1.5 rounded-lg text-white`}>
+                                        {getCategoryIcon((selectedItem as CommunityDonation).category)}
+                                    </span>
+                                    <span className="text-sm text-zinc-400">
+                                        {categoryConfig[(selectedItem as CommunityDonation).category]?.label || 'General'}
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* Description */}
+                            <div>
+                                <h3 className="text-sm font-semibold text-zinc-400 uppercase mb-2">Description</h3>
+                                <p className="text-zinc-300 whitespace-pre-wrap leading-relaxed">{selectedItem.description}</p>
+                            </div>
+
+                            {/* Link Button */}
+                            {selectedItem.link && (
+                                <a
+                                    href={selectedItem.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 rounded-xl font-medium transition-opacity"
+                                >
+                                    <ExternalLink className="w-4 h-4" />
+                                    {selectedItem.itemType === 'event' ? 'Event Details / Register' : 'Visit Website'}
+                                </a>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
